@@ -45,9 +45,11 @@ pipeline {
                 bat '''
                 cd deploy
                 git init
-                git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git
+                git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git    
                 git fetch origin gh-pages || echo Branch no existe
                 git checkout -B gh-pages
+                git config user.name "EmilioAMVs"
+                git config user.email "emiliocabrera321@outlook.com"
                 git add .
                 git commit -m "Deploy from Jenkins"
                 git push -f origin gh-pages
@@ -59,10 +61,10 @@ pipeline {
 
     post {
         success {
-            bat '✅ Deploy completado'
+            bat 'echo Deploy completado'
         }
         failure {
-            bat '❌ Algo falló en el pipeline'
+            bat 'echo Algo falló en el pipeline'
         }
     }
 }

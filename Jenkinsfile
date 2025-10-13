@@ -12,15 +12,6 @@ pipeline {
             }
         }
 
-        stage('Test SSH') {
-            steps {
-                bat '''
-                set GIT_SSH_COMMAND=ssh -i "C:\\Users\\PC\\JenkinsKey\\.ssh\\contador_clicks_key" -T git@github.com -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
-                '''
-            }
-        }
-
-        
         stage('Install dependencies') {
             steps {
                 bat 'npm install'
@@ -52,7 +43,7 @@ pipeline {
         stage('Deploy to GitHub Pages') {
             steps {
                 bat """
-                set GIT_SSH_COMMAND=ssh -i "C:\\Users\\PC\\JenkinsKey\\.ssh\\contador_clicks_key" -T git@github.com -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
+                set GIT_SSH_COMMAND=ssh -i "C:\\Users\\PC\\JenkinsKey\\.ssh\\contador_clicks_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
                 cd deploy
                 git init
                 git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git

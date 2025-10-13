@@ -43,7 +43,7 @@ pipeline {
         stage('Deploy to GitHub Pages') {
             steps {
                 bat """
-                set GIT_SSH_COMMAND=ssh -i C:\\ruta\\a\\tu\\private_key -o IdentitiesOnly=yes
+                set GIT_SSH_COMMAND=ssh -i C:/Users/PC/JenkinsKey/.ssh/contador_clicks_key -o IdentitiesOnly=yes
                 cd deploy
                 git init
                 git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git

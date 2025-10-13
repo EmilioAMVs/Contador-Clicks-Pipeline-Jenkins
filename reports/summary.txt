@@ -1,0 +1,21 @@
+=== LINT REPORT ===
+
+✅ No se encontraron problemas de lint
+
+=== TEST DETAIL ===
+
+1. [✅ PASÓ] Lógica del contador de clicks en 5s increment() aumenta el valor en 1
+2. [✅ PASÓ] Lógica del contador de clicks en 5s resetClicks() reinicia el contador a 0
+3. [✅ PASÓ] Lógica del contador de clicks en 5s addAttempt() agrega un nuevo intento con total de clicks
+4. [✅ PASÓ] Lógica del contador de clicks en 5s getBestAttempt() devuelve el intento con más clicks
+
+
+=== COVERAGE SUMMARY ===
+
+
+=============================== Coverage summary ===============================
+Statements   : 75% ( 6/8 )
+Branches     : 60% ( 3/5 )
+Functions    : 80% ( 4/5 )
+Lines        : 75% ( 6/8 )
+================================================================================

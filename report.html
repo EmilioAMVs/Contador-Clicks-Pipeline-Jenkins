@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reporte de Pipeline 🚀</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #f4f7fb; display: flex; justify-content: center; padding: 20px; }
+    main { width: min(900px, 95%); }
+    h1 { margin-bottom: 12px; }
+    .card { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 6px 18px rgba(20, 30, 50, 0.06); margin: 14px 0; font-family: system-ui, Segoe UI, Roboto, Arial; }
+    pre { background: #f0f0f0; padding: 12px; border-radius: 8px; overflow-x: auto; }
+    .lint { color: #4caf50; font-weight: bold; }
+    .test-pass { color: #4caf50; font-weight: bold; }
+    .test-fail { color: #f44336; font-weight: bold; }
+    .coverage { font-family: monospace; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Reporte de Pipeline 🚀</h1>
+    <section class="card">
+      <h2>Lint Report</h2>
+      <pre id="lintReport">Cargando...</pre>
+    </section>
+
+    <section class="card">
+      <h2>Detalle de Tests</h2>
+      <pre id="testReport">Cargando...</pre>
+    </section>
+
+    <section class="card">
+      <h2>Resumen de Cobertura</h2>
+      <pre id="coverageReport">Cargando...</pre>
+    </section>
+  </main>
+
+  <script>
+    async function loadReport() {
+      try {
+        const response = await fetch('reports/summary.txt');
+        const text = await response.text();
+
+        // Separar secciones
+        const lintMatch = text.match(/=== LINT REPORT ===\n([\s\S]*?)\n=== TEST DETAIL ===/);
+        const testMatch = text.match(/=== TEST DETAIL ===\n([\s\S]*?)\n=== COVERAGE SUMMARY ===/);
+        const coverageMatch = text.match(/=== COVERAGE SUMMARY ===\n([\s\S]*)/);
+
+        document.getElementById('lintReport').textContent = lintMatch ? lintMatch[1].trim() : 'No disponible';
+        document.getElementById('testReport').textContent = testMatch ? testMatch[1].trim() : 'No disponible';
+        document.getElementById('coverageReport').textContent = coverageMatch ? coverageMatch[1].trim() : 'No disponible';
+      } catch (err) {
+        document.getElementById('lintReport').textContent = 'Error cargando reporte';
+        document.getElementById('testReport').textContent = 'Error cargando reporte';
+        document.getElementById('coverageReport').textContent = 'Error cargando reporte';
+        console.error(err);
+      }
+    }
+
+    loadReport();
+  </script>
+</body>
+</html>

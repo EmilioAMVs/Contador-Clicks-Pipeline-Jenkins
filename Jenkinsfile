@@ -2,53 +2,63 @@ pipeline {
     agent any
 
     environment {
-        NODE_HOME = tool name: 'NodeJS', type: 'NodeJSInstallation' // Ajusta según tu Jenkins
-        PATH = "${env.NODE_HOME}/bin:${env.PATH}"
+        NODE_VERSION = "20" // asegúrate de usar la versión que tienes
     }
 
     stages {
-        stage('Instalar dependencias') {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git'
+            }
+        }
+
+        stage('Install dependencies') {
             steps {
                 sh 'npm install'
             }
         }
 
-        stage('Ejecutar tests y generar reporte') {
+        stage('Run Tests & Lint') {
             steps {
-                sh 'node generate-report.js'
+                sh 'npm run lint'
+                sh 'npm run test'
+                sh 'npm run report'
             }
         }
 
-        stage('Build estático') {
+        stage('Build for Pages') {
             steps {
-                echo 'No hay build, se usan archivos estáticos.'
+                // copiar index.html, style.css, report.html, coverage
+                sh '''
+                mkdir -p deploy
+                cp index.html style.css report.html -t deploy/
+                cp -r coverage deploy/coverage
+                cp -r reports deploy/reports
+                '''
             }
         }
 
-        stage('Deploy a GitHub Pages') {
+        stage('Deploy to GitHub Pages') {
             steps {
-                // Crea una rama gh-pages temporal
-                sh 'git checkout --orphan gh-pages'
-
-                // Agrega todos los archivos estáticos
-                sh 'git add index.html report.html style.css script.js logic.js reports/'
-
-                sh 'git commit -m "Deploy GitHub Pages [ci skip]"'
-
-                // Push a la rama gh-pages
-                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                    sh 'git push --force https://$GITHUB_TOKEN@github.com/usuario/pipeline-demo.git gh-pages'
-                }
-
-                // Vuelve a main
-                sh 'git checkout main'
+                sh '''
+                cd deploy
+                git init
+                git remote add origin https://github.com/EmilioAMVs/Contador-Clicks-Pipeline-Jenkins
+                git checkout -b gh-pages
+                git add .
+                git commit -m "Deploy from Jenkins"
+                git push -f origin gh-pages
+                '''
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline terminado'
+        success {
+            echo '✅ Deploy completado'
+        }
+        failure {
+            echo '❌ Algo falló en el pipeline'
         }
     }
 }

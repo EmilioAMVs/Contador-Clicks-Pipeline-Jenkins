@@ -6,6 +6,7 @@ console.log('📊 Generando reporte...');
 
 // --- Ejecutar ESLint ---
 let lintResult = '';
+let asd = 0;
 try {
   lintResult = execSync('npx eslint . --ext .js --format stylish', { encoding: 'utf8' });
   if (!lintResult.trim()) lintResult = '✅ No se encontraron problemas de lint';

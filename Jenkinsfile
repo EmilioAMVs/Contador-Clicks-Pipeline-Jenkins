@@ -58,6 +58,7 @@ pipeline {
                 }
             }
         }
+    } // fin de stages
 
     post {
         success {
@@ -68,4 +69,3 @@ pipeline {
         }
     }
 }
-

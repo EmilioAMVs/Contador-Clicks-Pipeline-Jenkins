@@ -42,20 +42,19 @@ pipeline {
 
         stage('Deploy to GitHub Pages') {
             steps {
-                sshagent(['github-contador-deploy-key']) {
-                    bat """
-                    cd deploy
-                    git init
-                    git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git
-                    git fetch origin gh-pages || echo Branch no existe
-                    git checkout -B gh-pages
-                    git config user.name "EmilioAMVs"
-                    git config user.email "emiliocabrera321@outlook.com"
-                    git add .
-                    git commit -m "Deploy from Jenkins"
-                    git push -f origin gh-pages
-                    """
-                }
+                bat """
+                set GIT_SSH_COMMAND=ssh -i C:\\ruta\\a\\tu\\private_key -o IdentitiesOnly=yes
+                cd deploy
+                git init
+                git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git
+                git fetch origin gh-pages || echo Branch no existe
+                git checkout -B gh-pages
+                git config user.name "EmilioAMVs"
+                git config user.email "emiliocabrera321@outlook.com"
+                git add .
+                git commit -m "Deploy from Jenkins"
+                git push -f origin gh-pages
+                """
             }
         }
     } // fin de stages

@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        NODE_VERSION = "20" // asegúrate de usar la versión que tienes
+        NODE_VERSION = "22.17" // asegúrate de usar la versión que tienes
     }
 
     stages {
@@ -48,6 +48,7 @@ pipeline {
                 git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git    
                 git fetch origin gh-pages || echo Branch no existe
                 git checkout -B gh-pages
+                credentialsId: 'github-contador-deploy-key'
                 git config user.name "EmilioAMVs"
                 git config user.email "emiliocabrera321@outlook.com"
                 git add .

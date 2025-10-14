@@ -34,6 +34,8 @@ pipeline {
                 copy index.html deploy\\
                 copy style.css deploy\\
                 copy report.html deploy\\
+                copy logic.js deploy\\
+                copy script.js deploy\\
                 xcopy /E /I coverage deploy\\coverage
                 xcopy /E /I reports deploy\\reports
                 '''

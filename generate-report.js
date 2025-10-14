@@ -6,6 +6,7 @@ console.log('📊 Generando reporte...');
 
 // --- Ejecutar ESLint ---
 let lintResult = '';
+// variable sin usar
 let asd = 0;
 try {
   lintResult = execSync('npx eslint . --ext .js --format stylish', { encoding: 'utf8' });

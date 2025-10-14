@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Demo: Contador de Clicks por Intento</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Demo — Contador de Clicks 🚀</h1>
+    <p id="desc">
+      Esta demo mide cuántos clicks haces en ventanas de 5 segundos. 
+      El contador aumenta al presionar "Incrementar", el pastel indica el progreso hacia un máximo por intento, 
+      y el gráfico de barras muestra el total de clicks de cada intento.
+    </p>
+
+    <!-- Sección de inicio -->
+    <section class="card control-card">
+      <h1>Máximo de clicks: <span id="maxClicks">0 </span> <span id="maxClicks">clicks</span></h1>
+      <button id="startBtn">Iniciar Intento</button>
+      <p id="status">Haz click en "Iniciar" para comenzar.</p>
+    </section>
+
+    <!-- Sección de contador y pastel lado a lado -->
+    <section class="card flex-row">
+      <div class="counter-container">
+        <h2>Contador</h2>
+        <div id="counter">0</div>
+        <button id="inc" disabled>Incrementar</button>
+      </div>
+
+      <div class="meter-container">
+        <h2>Progreso del intento</h2>
+        <canvas id="meter" width="200" height="200"></canvas>
+      </div>
+    </section>
+
+    <!-- Gráfico de barras -->
+    <section class="card">
+      <h2>Historial de intentos</h2>
+      <p>Muestra el total de clicks por ventana de 5 segundos</p>
+      <canvas id="barChart" width="400" height="200"></canvas>
+    </section>
+
+    <footer>
+      <small>Hecho por Emilio — Ejemplo educativo</small>
+    </footer>
+  </main>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

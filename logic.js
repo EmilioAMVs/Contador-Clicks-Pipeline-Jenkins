@@ -1,8 +1,3 @@
-// funcion sin utilizar
-export function getPercentage(clicks, max = 10) {
-  return Math.min(clicks / max, 1);
-}
-
 export function addAttempt(attemptsArray, clicks) {
   attemptsArray.push(clicks);
   return attemptsArray;
@@ -25,7 +20,6 @@ if (typeof module !== 'undefined') {
     increment,
     resetClicks,
     addAttempt,
-    getBestAttempt,
-    getPercentage
+    getBestAttempt
   };
 }

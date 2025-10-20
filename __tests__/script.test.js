@@ -1,6 +1,6 @@
 import { increment, resetClicks, addAttempt, getBestAttempt } from '../logic.js';
 
-describe('Lógica del contador de clicks en 5s', () => {
+describe('Funciones de manejo de clicks', () => {
 
   test('increment() aumenta el valor en 1', () => {
     expect(increment(0)).toBe(1);

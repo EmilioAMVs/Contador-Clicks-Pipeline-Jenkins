@@ -1,0 +1,5 @@
+Fecha: 20/10/2025, 3:53:43 a. m.
+Errores: 0
+Advertencias: 1
+Detalles:
+[⚠️] Línea 9, Col 5: 'asd' is assigned a value but never used. (no-unused-vars)

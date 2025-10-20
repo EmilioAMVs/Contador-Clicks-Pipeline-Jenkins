@@ -1,21 +1,20 @@
-=== LINT REPORT ===
 
-✅ No se encontraron problemas de lint
-
-=== TEST DETAIL ===
-
-1. [✅ PASÓ] Lógica del contador de clicks en 5s increment() aumenta el valor en 1
-2. [✅ PASÓ] Lógica del contador de clicks en 5s resetClicks() reinicia el contador a 0
-3. [✅ PASÓ] Lógica del contador de clicks en 5s addAttempt() agrega un nuevo intento con total de clicks
-4. [✅ PASÓ] Lógica del contador de clicks en 5s getBestAttempt() devuelve el intento con más clicks
+=== RESUMEN DEL ANÁLISIS ===
+📌 Lint generado: 20/10/2025, 3:53:43 a. m.
+ESLint Errors: 0
+ESLint Warnings: 1
+Detalles:
+[⚠️] Línea 9, Col 5: 'asd' is assigned a value but never used. (no-unused-vars)
 
 
-=== COVERAGE SUMMARY ===
+📌 Jest generado: 20/10/2025, 3:53:46 a. m.
+Tests Passed: 4
+Tests Failed: 0
+Detalles:
+[✅ PASÓ] Funciones de manejo de clicks increment() aumenta el valor en 1
+[✅ PASÓ] Funciones de manejo de clicks resetClicks() reinicia el contador a 0
+[✅ PASÓ] Funciones de manejo de clicks addAttempt() agrega un nuevo intento con total de clicks
+[✅ PASÓ] Funciones de manejo de clicks getBestAttempt() devuelve el intento con más clicks
 
 
-=============================== Coverage summary ===============================
-Statements   : 75% ( 6/8 )
-Branches     : 60% ( 3/5 )
-Functions    : 80% ( 4/5 )
-Lines        : 75% ( 6/8 )
-================================================================================
+Cobertura: 85.71%

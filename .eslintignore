@@ -1,0 +1,3 @@
+# Excluir archivos generados por jest-html-reporters
+reports/jest-html-reporters-attach/**
+reports/eslint-report.html

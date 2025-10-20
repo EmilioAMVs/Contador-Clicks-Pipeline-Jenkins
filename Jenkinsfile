@@ -2,62 +2,77 @@ pipeline {
     agent any
 
     environment {
-        NODE_VERSION = "22.17"
-        GIT_SSH_KEY_ID = "GITHUB_SSH_KEY" // ID de la credencial SSH en Jenkins
+        NODE_VERSION = "22.17"  // Ajusta según tu versión
+        SSH_KEY_PATH = "C:\\Users\\PC\\JenkinsKey\\.ssh\\contador_clicks_key"
+        REPO_URL = "git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git"
+        DEPLOY_BRANCH = "gh-pages"
     }
 
-    stage('Checkout') {
-        steps {
-            sshagent(['GITHUB_SSH_KEY']) {
-                bat 'git clone -b main git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git'
+    stages {
+        stage('Checkout') {
+            steps {
+                bat '''
+                set GIT_SSH_COMMAND=ssh -i "%SSH_KEY_PATH%" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
+                if exist repo rmdir /s /q repo
+                mkdir repo
+                cd repo
+                git init
+                git remote add origin %REPO_URL%
+                git fetch origin main
+                git checkout -B main origin/main
+                '''
             }
         }
-    }
 
         stage('Install dependencies') {
             steps {
-                bat 'npm install'
+                dir('repo') {
+                    bat 'npm install'
+                }
             }
         }
 
-        stage('Run Tests & Lint') {
+        stage('Lint & Test') {
             steps {
-                bat 'npm run lint'
-                bat 'npm run test'
-                bat 'npm run report'
+                dir('repo') {
+                    bat 'npm run lint'
+                    bat 'npm run test'
+                    bat 'npm run report'
+                }
             }
         }
 
         stage('Build for Pages') {
             steps {
-                bat '''
-                if exist deploy rmdir /s /q deploy
-                mkdir deploy
-                copy index.html deploy\\
-                copy style.css deploy\\
-                copy report.html deploy\\
-                copy logic.js deploy\\
-                copy script.js deploy\\
-                xcopy /E /I coverage deploy\\coverage
-                xcopy /E /I reports deploy\\reports
-                '''
+                dir('repo') {
+                    bat '''
+                    if exist deploy rmdir /s /q deploy
+                    mkdir deploy
+                    copy index.html deploy\\
+                    copy style.css deploy\\
+                    copy report.html deploy\\
+                    copy script.js deploy\\
+                    xcopy /E /I coverage deploy\\coverage
+                    xcopy /E /I reports deploy\\reports
+                    '''
+                }
             }
         }
 
         stage('Deploy to GitHub Pages') {
             steps {
-                sshagent([env.GIT_SSH_KEY_ID]) {
+                dir('repo/deploy') {
                     bat '''
-                    cd deploy
+                    set GIT_SSH_COMMAND=ssh -i "%SSH_KEY_PATH%" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
                     git init
-                    git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git
-                    git fetch origin gh-pages || echo Branch no existe
-                    git checkout -B gh-pages
+                    git remote add origin %REPO_URL%
+                    git fetch origin %DEPLOY_BRANCH% || echo Branch no existe
+                    git checkout -B %DEPLOY_BRANCH%
                     git config user.name "EmilioAMVs"
                     git config user.email "emiliocabrera321@outlook.com"
                     git add .
                     git commit -m "Deploy from Jenkins"
-                    git push -f origin gh-pages
+                    git push -f origin %DEPLOY_BRANCH%
                     '''
                 }
             }
@@ -66,13 +81,13 @@ pipeline {
 
     post {
         always {
-            bat 'echo Pipeline terminado (always)'
+            bat 'echo Pipeline finalizado'
         }
         success {
-            bat 'echo Deploy completado con éxito!'
+            bat 'echo Deploy completado correctamente'
         }
         failure {
-            bat 'echo Algo falló en el pipeline'
+            bat 'echo Hubo un error en el pipeline'
         }
     }
 }

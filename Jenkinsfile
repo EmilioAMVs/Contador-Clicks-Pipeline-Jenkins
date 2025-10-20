@@ -2,13 +2,20 @@ pipeline {
     agent any
 
     environment {
-        NODE_VERSION = "22.17" // asegúrate de usar la versión que tienes
+        NODE_VERSION = "22.17"
+        GIT_SSH_KEY_ID = "GITHUB_SSH_KEY" // ID de la credencial SSH en Jenkins
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git'
+                checkout([$class: 'GitSCM',
+                          branches: [[name: 'main']],
+                          userRemoteConfigs: [[
+                              url: 'git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git',
+                              credentialsId: env.GIT_SSH_KEY_ID
+                          ]]
+                ])
             }
         }
 
@@ -44,26 +51,30 @@ pipeline {
 
         stage('Deploy to GitHub Pages') {
             steps {
-                bat """
-                set GIT_SSH_COMMAND=ssh -i "C:\\Users\\PC\\JenkinsKey\\.ssh\\contador_clicks_key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
-                cd deploy
-                git init
-                git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git
-                git fetch origin gh-pages || echo Branch no existe
-                git checkout -B gh-pages
-                git config user.name "EmilioAMVs"
-                git config user.email "emiliocabrera321@outlook.com"
-                git add .
-                git commit -m "Deploy from Jenkins"
-                git push -f origin gh-pages
-                """
+                sshagent([env.GIT_SSH_KEY_ID]) {
+                    bat '''
+                    cd deploy
+                    git init
+                    git remote add origin git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git
+                    git fetch origin gh-pages || echo Branch no existe
+                    git checkout -B gh-pages
+                    git config user.name "EmilioAMVs"
+                    git config user.email "emiliocabrera321@outlook.com"
+                    git add .
+                    git commit -m "Deploy from Jenkins"
+                    git push -f origin gh-pages
+                    '''
+                }
             }
         }
-    } // fin de stages
+    }
 
     post {
+        always {
+            bat 'echo Pipeline terminado (always)'
+        }
         success {
-            bat 'echo Deploy completado'
+            bat 'echo Deploy completado con éxito!'
         }
         failure {
             bat 'echo Algo falló en el pipeline'

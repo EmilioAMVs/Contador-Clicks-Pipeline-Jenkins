@@ -6,18 +6,13 @@ pipeline {
         GIT_SSH_KEY_ID = "GITHUB_SSH_KEY" // ID de la credencial SSH en Jenkins
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout([$class: 'GitSCM',
-                          branches: [[name: 'main']],
-                          userRemoteConfigs: [[
-                              url: 'git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git',
-                              credentialsId: env.GIT_SSH_KEY_ID
-                          ]]
-                ])
+    stage('Checkout') {
+        steps {
+            sshagent(['GITHUB_SSH_KEY']) {
+                bat 'git clone -b main git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git'
             }
         }
+    }
 
         stage('Install dependencies') {
             steps {

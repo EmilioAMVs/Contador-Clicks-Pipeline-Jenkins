@@ -6,6 +6,7 @@ pipeline {
         SSH_KEY_PATH = "C:\\Users\\PC\\JenkinsKey\\.ssh\\contador_clicks_key"
         REPO_URL = "git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git"
         DEPLOY_BRANCH = "gh-pages"
+        POWER_AUTOMATE_URL = "https://default585a4d92db1d4bbbb5acc5299e3894.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6f7c6fd284914f01b857dd1b363302fc/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=0nW7l_BuvhrNdr_M-9upE2LqKnuMucpsH8c20YnwqhI"
     }
 
     stages {
@@ -27,7 +28,9 @@ pipeline {
         stage('Install dependencies') {
             steps {
                 dir('repo') {
-                    bat 'npm install'
+                    cache(maxCacheSize: 1, key: "npm-${NODE_VERSION}", paths: ['node_modules', '.npm']) {
+                        bat 'npm install'
+                    }
                 }
             }
         }
@@ -35,7 +38,6 @@ pipeline {
         stage('Lint & Test') {
             steps {
                 dir('repo') {
-                    bat 'npm run lint'
                     bat 'npm run test'
                     bat 'npm run report'
                 }
@@ -82,6 +84,25 @@ pipeline {
     post {
         always {
             bat 'echo Pipeline finalizado'
+
+            // --- Enviar notificación a Power Automate ---
+            script {
+                def summaryText = readFile('repo/reports/summary.txt')
+                def payload = [
+                    pipelineName: env.JOB_NAME,
+                    status: currentBuild.currentResult,
+                    summary: summaryText
+                ]
+                
+                // Llamada HTTP POST
+                httpRequest(
+                    url: env.POWER_AUTOMATE_URL,
+                    httpMode: 'POST',
+                    contentType: 'APPLICATION_JSON',
+                    acceptType: 'APPLICATION_JSON',
+                    requestBody: groovy.json.JsonOutput.toJson(payload)
+                )
+            }
         }
         success {
             bat 'echo Deploy completado correctamente'

@@ -1,31 +1,85 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/reference/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/guides/orchestrate/jobs-steps/#jobs-overview & https://circleci.com/docs/reference/configuration-reference/#jobs
-jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/guides/execution-managed/executor-intro/ & https://circleci.com/docs/reference/configuration-reference/#executor-job
+executors:
+  node_executor:
     docker:
-      # Specify the version you desire here
-      # See: https://circleci.com/developer/images/image/cimg/base
-      - image: cimg/base:current
+      - image: cimg/node:22.17
+    environment:
+      REPO_URL: git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git
+      DEPLOY_BRANCH: gh-pages
+      POWER_AUTOMATE_URL: "https://default585a4d92db1d4bbbb5acc5299e3894.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6f7c6fd284914f01b857dd1b363302fc/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=0nW7l_BuvhrNdr_M-9upE2LqKnuMucpsH8c20YnwqhI"
 
-    # Add steps to the job
-    # See: https://circleci.com/docs/guides/orchestrate/jobs-steps/#steps-overview & https://circleci.com/docs/reference/configuration-reference/#steps
+jobs:
+  build_and_deploy:
+    executor: node_executor
     steps:
-      # Checkout the code as the first step.
       - checkout
-      - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
 
-# Orchestrate jobs using workflows
-# See: https://circleci.com/docs/guides/orchestrate/workflows/ & https://circleci.com/docs/reference/configuration-reference/#workflows
+      - add_ssh_keys:
+          fingerprints:
+            - "aa:bb:cc:dd:ee:ff:11:22:33:44:55:66:77:88:99:00"
+
+      - run:
+          name: Install dependencies
+          command: |
+            npm ci
+
+      - run:
+          name: Lint & Test
+          command: |
+            npm run test
+            npm run report
+
+      - run:
+          name: Build deploy folder
+          command: |
+            mkdir -p deploy
+            cp index.html deploy/
+            cp style.css deploy/
+            cp report.html deploy/
+            cp script.js deploy/
+            cp -r coverage deploy/coverage
+            cp -r reports deploy/reports
+
+      - run:
+          name: Deploy to GitHub Pages
+          command: |
+            cd deploy
+            git init
+            git remote add origin $REPO_URL
+            git checkout -B $DEPLOY_BRANCH
+            git config user.name "EmilioAMVs"
+            git config user.email "emiliocabrera321@outlook.com"
+            git add .
+            git commit -m "Deploy from CircleCI"
+            git push -f origin $DEPLOY_BRANCH
+
+      - run:
+          name: Send notification to Power Automate
+          command: |
+            SUMMARY_FILE="reports/summary.txt"
+            if [ -f "$SUMMARY_FILE" ]; then
+              SUMMARY_TEXT=$(cat "$SUMMARY_FILE")
+            else
+              SUMMARY_TEXT="No summary file found."
+            fi
+
+            STATUS="success"
+            if [ "${CIRCLE_JOB_STATUS}" != "success" ]; then
+              STATUS="failure"
+            fi
+
+            PAYLOAD=$(jq -n \
+              --arg pipelineName "${CIRCLE_PROJECT_REPONAME}" \
+              --arg status "$STATUS" \
+              --arg summary "$SUMMARY_TEXT" \
+              '{pipelineName: $pipelineName, status: $status, summary: $summary}')
+
+            curl -X POST -H "Content-Type: application/json" \
+              -d "$PAYLOAD" "$POWER_AUTOMATE_URL"
+
 workflows:
-  say-hello-workflow: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  version: 2
+  build-deploy-workflow:
     jobs:
-      - say-hello
+      - build_and_deploy

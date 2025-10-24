@@ -1,6 +1,5 @@
 {
   "testEnvironment": "node",
-  "extensionsToTreatAsEsm": [".js"],
   "transform": {},
   "collectCoverage": true,
   "coverageDirectory": "coverage",

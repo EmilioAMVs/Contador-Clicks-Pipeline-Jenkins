@@ -15,5 +15,11 @@
   ],
   "transform": {
     "^.+\\.js$": "babel-jest"
-  }
+  },
+  "testMatch": [
+    "**/__tests__/**/*.[jt]s?(x)",
+    "**/?(*.)+(spec|test).[tj]s?(x)",
+    "**/__tests__/**/*.cjs",
+    "**/?(*.)+(spec|test).cjs"
+  ]
 }

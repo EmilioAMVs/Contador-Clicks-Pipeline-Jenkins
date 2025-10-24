@@ -5,9 +5,7 @@ executors:
     docker:
       - image: cimg/node:22.17
     environment:
-      REPO_URL: git@github.com:EmilioAMVs/Contador-Clicks-Pipeline-Jenkins.git
       DEPLOY_BRANCH: gh-pages
-      POWER_AUTOMATE_URL: "https://default585a4d92db1d4bbbb5acc5299e3894.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6f7c6fd284914f01b857dd1b363302fc/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=0nW7l_BuvhrNdr_M-9upE2LqKnuMucpsH8c20YnwqhI"
 
 jobs:
   build_and_deploy:
@@ -15,14 +13,20 @@ jobs:
     steps:
       - checkout
 
-      - add_ssh_keys:
-          fingerprints:
-            - "aa:bb:cc:dd:ee:ff:11:22:33:44:55:66:77:88:99:00"
+      - restore_cache:
+          keys:
+            - npm-cache-v1-{{ checksum "package-lock.json" }}
+            - npm-cache-v1-
 
       - run:
           name: Install dependencies
           command: |
             npm ci
+
+      - save_cache:
+          key: npm-cache-v1-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
 
       - run:
           name: Lint & Test
@@ -38,20 +42,21 @@ jobs:
             cp style.css deploy/
             cp report.html deploy/
             cp script.js deploy/
-            cp -r coverage deploy/coverage
-            cp -r reports deploy/reports
+            cp -r coverage deploy/coverage || true
+            cp -r reports deploy/reports || true
 
       - run:
-          name: Deploy to GitHub Pages
+          name: Deploy to GitHub Pages (via HTTPS + Token)
           command: |
             cd deploy
             git init
-            git remote add origin $REPO_URL
             git checkout -B $DEPLOY_BRANCH
             git config user.name "EmilioAMVs"
             git config user.email "emiliocabrera321@outlook.com"
             git add .
             git commit -m "Deploy from CircleCI"
+
+            git remote add origin https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git
             git push -f origin $DEPLOY_BRANCH
 
       - run:
@@ -64,14 +69,9 @@ jobs:
               SUMMARY_TEXT="No summary file found."
             fi
 
-            STATUS="success"
-            if [ "${CIRCLE_JOB_STATUS}" != "success" ]; then
-              STATUS="failure"
-            fi
-
             PAYLOAD=$(jq -n \
               --arg pipelineName "${CIRCLE_PROJECT_REPONAME}" \
-              --arg status "$STATUS" \
+              --arg status "${CIRCLE_JOB_STATUS:-success}" \
               --arg summary "$SUMMARY_TEXT" \
               '{pipelineName: $pipelineName, status: $status, summary: $summary}')
 

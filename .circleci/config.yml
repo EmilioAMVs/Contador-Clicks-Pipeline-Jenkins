@@ -1,0 +1,85 @@
+version: 2.1
+
+executors:
+  node_executor:
+    docker:
+      - image: cimg/node:22.17
+    environment:
+      DEPLOY_BRANCH: gh-pages
+
+jobs:
+  build_and_deploy:
+    executor: node_executor
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - npm-cache-v1-{{ checksum "package-lock.json" }}
+            - npm-cache-v1-
+
+      - run:
+          name: Install dependencies
+          command: |
+            npm ci
+
+      - save_cache:
+          key: npm-cache-v1-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+
+      - run:
+          name: Lint & Test
+          command: |
+            npm run test
+            npm run report
+
+      - run:
+          name: Build deploy folder
+          command: |
+            mkdir -p deploy
+            cp index.html deploy/
+            cp style.css deploy/
+            cp report.html deploy/
+            cp script.js deploy/
+            cp -r coverage deploy/coverage || true
+            cp -r reports deploy/reports || true
+
+      - run:
+          name: Deploy to GitHub Pages (via HTTPS + Token)
+          command: |
+            cd deploy
+            git init
+            git checkout -B $DEPLOY_BRANCH
+            git config user.name "EmilioAMVs"
+            git config user.email "emiliocabrera321@outlook.com"
+            git add .
+            git commit -m "Deploy from CircleCI"
+
+            git remote add origin https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git
+            git push -f origin $DEPLOY_BRANCH
+
+      - run:
+          name: Send notification to Power Automate
+          command: |
+            SUMMARY_FILE="reports/summary.txt"
+            if [ -f "$SUMMARY_FILE" ]; then
+              SUMMARY_TEXT=$(cat "$SUMMARY_FILE")
+            else
+              SUMMARY_TEXT="No summary file found."
+            fi
+
+            PAYLOAD=$(jq -n \
+              --arg pipelineName "${CIRCLE_PROJECT_REPONAME}" \
+              --arg status "${CIRCLE_JOB_STATUS:-success}" \
+              --arg summary "$SUMMARY_TEXT" \
+              '{pipelineName: $pipelineName, status: $status, summary: $summary}')
+
+            curl -X POST -H "Content-Type: application/json" \
+              -d "$PAYLOAD" "$POWER_AUTOMATE_URL"
+
+workflows:
+  version: 2
+  build-deploy-workflow:
+    jobs:
+      - build_and_deploy

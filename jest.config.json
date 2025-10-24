@@ -12,5 +12,8 @@
       "hideIcon": true,
       "pageTitle": "Reporte de Tests Jest"
     }]
-  ]
+  ],
+  "transform": {
+    "^.+\\.js$": "babel-jest"
+  }
 }

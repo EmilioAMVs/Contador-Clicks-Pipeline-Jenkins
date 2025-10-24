@@ -3,14 +3,19 @@
   "collectCoverage": true,
   "coverageDirectory": "coverage",
   "verbose": true,
+  "transform": {},
+  "extensionsToTreatAsEsm": [".js"],
   "reporters": [
     "default",
-    ["jest-html-reporters", {
-      "publicPath": "./reports",
-      "filename": "jest-report.html",
-      "expand": true,
-      "hideIcon": true,
-      "pageTitle": "Reporte de Tests Jest"
-    }]
+    [
+      "jest-html-reporters",
+      {
+        "publicPath": "./reports",
+        "filename": "jest-report.html",
+        "expand": true,
+        "hideIcon": true,
+        "pageTitle": "Reporte de Tests Jest"
+      }
+    ]
   ]
 }

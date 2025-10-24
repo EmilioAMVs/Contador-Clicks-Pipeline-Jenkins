@@ -1,5 +1,7 @@
 {
   "testEnvironment": "node",
+  "extensionsToTreatAsEsm": [".js"],
+  "transform": {},
   "collectCoverage": true,
   "coverageDirectory": "coverage",
   "verbose": true,
@@ -12,14 +14,5 @@
       "hideIcon": true,
       "pageTitle": "Reporte de Tests Jest"
     }]
-  ],
-  "transform": {
-    "^.+\\.js$": "babel-jest"
-  },
-  "testMatch": [
-    "**/__tests__/**/*.[jt]s?(x)",
-    "**/?(*.)+(spec|test).[tj]s?(x)",
-    "**/__tests__/**/*.cjs",
-    "**/?(*.)+(spec|test).cjs"
   ]
 }

@@ -5,7 +5,7 @@ export function addAttempt(attemptsArray, clicks) {
 
 export function resetClicks() {
   return 0;
-}
+} 
 export function increment(clicks) {
   return clicks + 1;
 }

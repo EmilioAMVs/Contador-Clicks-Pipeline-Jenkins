@@ -118,3 +118,30 @@ btn.addEventListener('click', () => {
 // --- inicializa gráficos ---
 drawMeter(0);
 drawBarChart([]);
+
+// Contexto requerido por LaunchDarkly
+const context = {
+  kind: "user",
+  key: "context-key-123abc" // puedes dejarlo así
+};
+
+const client = LDClient.initialize("692cf884023b6e09ac4db4af", context);
+
+client.on("ready", () => {
+  console.log("LaunchDarkly listo!");
+
+  const flagValue = client.variation("reports-button", false);
+
+  console.log("Flag reports-button =", flagValue);
+
+  const reportsBtn = document.getElementById("reportsBtn");
+  const reportsMessage = document.getElementById("reportsMessage");
+
+  if (flagValue) {
+    reportsBtn.style.display = "inline-block";
+    reportsMessage.textContent = "Reportes habilitados";
+  } else {
+    reportsBtn.style.display = "none";
+    reportsMessage.textContent = "Reportes deshabilitados";
+  }
+});

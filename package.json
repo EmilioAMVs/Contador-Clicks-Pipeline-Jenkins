@@ -19,6 +19,7 @@
     "jest-html-reporter": "^3.1.7"
   },
   "dependencies": {
-    "jest-html-reporters": "^3.1.7"
+    "jest-html-reporters": "^3.1.7",
+    "launchdarkly-js-client-sdk": "^3.9.0"
   }
 }

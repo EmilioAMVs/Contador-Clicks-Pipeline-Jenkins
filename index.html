@@ -7,12 +7,19 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
+ <main>
     <h1>Demo — Contador de Clicks 🚀</h1>
     <p id="desc">
       Esta demo mide cuántos clicks haces en ventanas de 5 segundos. 
       El contador aumenta al presionar "Incrementar", el pastel indica el progreso hacia un máximo por intento, 
       y el gráfico de barras muestra el total de clicks de cada intento.
+      <br>
+      <h2 id="reportsMessage" style="font-weight:bold; margin-bottom: 0;" align="center">Feature Flag</h2>
+      
+      <!-- Contenedor con flexbox para centrar -->
+      <div style="display: flex; justify-content: center; margin-top: 0;">
+        <button id="reportsBtn" style="display:none;" onclick="location.href='report.html'">Reportes 📊</button>
+      </div>
     </p>
 
     <!-- Sección de inicio -->
@@ -48,6 +55,9 @@
     </footer>
   </main>
 
+  <!-- SDK de LaunchDarkly desde CDN -->
+  <script src="https://unpkg.com/launchdarkly-js-client-sdk/dist/ldclient.min.js"></script>
+  <!-- Scripts de la aplicación -->
   <script type="module" src="script.js"></script>
 </body>
 </html>

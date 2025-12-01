@@ -69,19 +69,6 @@ jobs:
           command: |
             sed -i "s|image: ghcr.io/.*/contador:.*|image: ghcr.io/${GITHUB_USER}/contador:$IMAGE_TAG|" k8s/deployment.yaml
 
-      - run:
-          name: Commit manifest update (Triggers ArgoCD sync)
-          command: |
-            git config user.name "CircleCI Bot"
-            git config user.email "ci-bot@circleci.com"
-
-            # Restaurar cambios no deseados (como package-lock.json)
-            git restore package-lock.json || true
-
-            git add k8s/deployment.yaml
-            git commit -m "Deploy image $IMAGE_TAG via CircleCI" || echo "No changes to commit"
-            git push https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git HEAD
-
 workflows:
   version: 2
   build-deploy-workflow:

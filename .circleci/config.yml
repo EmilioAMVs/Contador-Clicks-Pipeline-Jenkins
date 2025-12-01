@@ -75,8 +75,11 @@ jobs:
             git config user.name "CircleCI Bot"
             git config user.email "ci-bot@circleci.com"
 
+            # Restaurar cambios no deseados (como package-lock.json)
+            git restore package-lock.json || true
+
             git add k8s/deployment.yaml
-            git commit -m "Deploy image $IMAGE_TAG via CircleCI"
+            git commit -m "Deploy image $IMAGE_TAG via CircleCI" || echo "No changes to commit"
             git push https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git HEAD
 
 workflows:

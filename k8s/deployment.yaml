@@ -16,7 +16,7 @@ spec:
       imagePullSecrets:
       - name: ghcr-secret
       containers:
-        - name: argocd-container
-          image: ghcr.io/emilioamvs/myapp:latest
+        - name: default-container
+          image: ghcr.io/emilioamvs/contador:latest
           ports:
             - containerPort: 8080

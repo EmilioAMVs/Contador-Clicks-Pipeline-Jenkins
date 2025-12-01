@@ -14,6 +14,12 @@ jobs:
 
       - setup_remote_docker:
             docker_layer_caching: false
+      - run:
+          name: Normalize vars to lowercase
+          command: |
+            GITHUB_USER_LC=$(echo "$GITHUB_USER" | tr '[:upper:]' '[:lower:]')
+            echo "export GITHUB_USER_LC=$GITHUB_USER_LC" >> $BASH_ENV
+            source $BASH_ENV
 
       - run:
           name: Build Docker image
@@ -22,8 +28,8 @@ jobs:
             echo "export IMAGE_TAG=$IMAGE_TAG" >> $BASH_ENV
             source $BASH_ENV
 
-            docker build -t ghcr.io/${GITHUB_USER}/myapp:$IMAGE_TAG .
-            docker build -t ghcr.io/${GITHUB_USER}/myapp:latest .
+            docker build -t ghcr.io/${GITHUB_USER_LC}/contador:$IMAGE_TAG .
+            docker build -t ghcr.io/${GITHUB_USER_LC}/contador:latest .
 
       - run:
           name: Login to GHCR
@@ -33,13 +39,13 @@ jobs:
       - run:
           name: Push image to GHCR
           command: |
-            docker push ghcr.io/${GITHUB_USER}/myapp:$IMAGE_TAG
-            docker push ghcr.io/${GITHUB_USER}/myapp:latest
+            docker push ghcr.io/${GITHUB_USER_LC}/contador:$IMAGE_TAG
+            docker push ghcr.io/${GITHUB_USER_LC}/contador:latest
 
       - run:
           name: Update Kubernetes Deployment manifest
           command: |
-            sed -i "s|image: ghcr.io/.*/myapp:.*|image: ghcr.io/${GITHUB_USER}/myapp:$IMAGE_TAG|" k8s/deployment.yaml
+            sed -i "s|image: ghcr.io/.*/contador:.*|image: ghcr.io/${GITHUB_USER}/contador:$IMAGE_TAG|" k8s/deployment.yaml
 
       - run:
           name: Commit manifest update (Triggers ArgoCD sync)

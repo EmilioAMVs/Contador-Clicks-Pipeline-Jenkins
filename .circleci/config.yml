@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker_executor:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:22.17
 
 jobs:
   build_push_deploy:

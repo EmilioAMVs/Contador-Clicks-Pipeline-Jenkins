@@ -1,91 +1,58 @@
 version: 2.1
 
 executors:
-  node_executor:
+  docker_executor:
     docker:
-      - image: cimg/node:22.17
-    environment:
-      DEPLOY_BRANCH: gh-pages
+      - image: cimg/base:stable   # Necesitamos Docker CLI aquí
 
 jobs:
-  build_and_deploy:
-    executor: node_executor
+  build_push_deploy:
+    executor: docker_executor
+
     steps:
       - checkout
 
-      - restore_cache:
-          keys:
-            - npm-cache-v1-{{ checksum "package-lock.json" }}
-            - npm-cache-v1-
+      - setup_remote_docker:
+          version: 20.10.14
 
       - run:
-          name: Install dependencies
+          name: Build Docker image
           command: |
-            npm ci
+            IMAGE_TAG=$(echo $CIRCLE_SHA1 | cut -c1-7)
+            echo "export IMAGE_TAG=$IMAGE_TAG" >> $BASH_ENV
+            source $BASH_ENV
 
-      - save_cache:
-          key: npm-cache-v1-{{ checksum "package-lock.json" }}
-          paths:
-            - ~/.npm
+            docker build -t ghcr.io/${GITHUB_USER}/myapp:$IMAGE_TAG .
+            docker build -t ghcr.io/${GITHUB_USER}/myapp:latest .
 
       - run:
-          name: Lint & Test
+          name: Login to GHCR
           command: |
-            npm run test
-            npm run report
+            echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USER --password-stdin
 
       - run:
-          name: Build deploy folder
+          name: Push image to GHCR
           command: |
-            mkdir -p deploy
-            cp index.html deploy/
-            cp style.css deploy/
-            cp report.html deploy/
-            cp script.js deploy/
-            cp -r coverage deploy/coverage || true
-            cp -r reports deploy/reports || true
+            docker push ghcr.io/${GITHUB_USER}/myapp:$IMAGE_TAG
+            docker push ghcr.io/${GITHUB_USER}/myapp:latest
 
       - run:
-          name: Deploy to GitHub Pages (via HTTPS + Token)
+          name: Update Kubernetes Deployment manifest
           command: |
-            cd deploy
-            git init
-            git checkout -B $DEPLOY_BRANCH
-            git config user.name "EmilioAMVs"
-            git config user.email "emiliocabrera321@outlook.com"
-            git add .
-            git commit -m "Deploy from CircleCI"
-
-            git remote add origin https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git
-            git push -f origin $DEPLOY_BRANCH
+            sed -i "s|image: ghcr.io/.*/myapp:.*|image: ghcr.io/${GITHUB_USER}/myapp:$IMAGE_TAG|" k8s/deployment.yaml
 
       - run:
-          name: Send notification to Power Automate
-          when: always
+          name: Commit manifest update (Triggers ArgoCD sync)
           command: |
-            STATUS="SUCCESS"
-            if [ "$CIRCLE_JOB" != "build_and_deploy" ]; then
-              STATUS="FAILED"
-            fi
+            git config user.name "CircleCI Bot"
+            git config user.email "ci-bot@circleci.com"
 
-            SUMMARY_FILE="reports/summary.txt"
-            if [ -f "$SUMMARY_FILE" ]; then
-              SUMMARY_TEXT=$(cat "$SUMMARY_FILE")
-            else
-              SUMMARY_TEXT="No summary file found."
-            fi
-
-            PAYLOAD=$(jq -n \
-              --arg pipelineName "${CIRCLE_PROJECT_REPONAME}" \
-              --arg status "$STATUS" \
-              --arg summary "$SUMMARY_TEXT" \
-              '{pipelineName: $pipelineName, status: $status, summary: $summary}')
-
-            curl -X POST -H "Content-Type: application/json" \
-              -d "$PAYLOAD" "$POWER_AUTOMATE_URL"
+            git add k8s/deployment.yaml
+            git commit -m "Deploy image $IMAGE_TAG via CircleCI"
+            git push https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git HEAD
 
 workflows:
   version: 2
   build-deploy-workflow:
     jobs:
-      - build_and_deploy
+      - build_push_deploy

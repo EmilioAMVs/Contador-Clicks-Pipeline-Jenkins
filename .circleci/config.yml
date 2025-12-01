@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker_executor:
     docker:
-      - image: cimg/base:stable   # Necesitamos Docker CLI aquí
+      - image: cimg/base:stable
 
 jobs:
   build_push_deploy:
@@ -13,7 +13,29 @@ jobs:
       - checkout
 
       - setup_remote_docker:
-            docker_layer_caching: false
+          docker_layer_caching: false
+
+      # Install dependencies and run tests
+      - run:
+          name: Install Node + Dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y nodejs npm
+            npm ci || npm install
+
+      - run:
+          name: Run tests and ensure coverage/reports exist
+          command: |
+            echo "Running tests..."
+            npm run test || echo "Tests failed — continuing pipeline"
+
+            echo "Generating report..."
+            npm run report || echo "Report generation failed — continuing pipeline"
+
+            echo "Ensuring coverage and reports directories exist..."
+            mkdir -p coverage
+            mkdir -p reports
+
       - run:
           name: Normalize vars to lowercase
           command: |

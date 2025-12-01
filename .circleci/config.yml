@@ -65,9 +65,55 @@ jobs:
             docker push ghcr.io/${GITHUB_USER_LC}/contador:latest
 
       - run:
-          name: Update Kubernetes Deployment manifest
+          name: Build deploy folder
           command: |
-            sed -i "s|image: ghcr.io/.*/contador:.*|image: ghcr.io/${GITHUB_USER}/contador:$IMAGE_TAG|" k8s/deployment.yaml
+            mkdir -p deploy
+            cp index.html deploy/
+            cp style.css deploy/
+            cp report.html deploy/
+            cp script.js deploy/
+            cp logic.js deploy/
+            cp -r coverage deploy/coverage || true
+            cp -r reports deploy/reports || true
+
+      - run:
+          name: Deploy to GitHub Pages (via HTTPS + Token)
+          command: |
+            cd deploy
+            git init
+            git checkout -B $DEPLOY_BRANCH
+            git config user.name "EmilioAMVs"
+            git config user.email "emiliocabrera321@outlook.com"
+            git add .
+            git commit -m "Deploy from CircleCI"
+
+            git remote add origin https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git
+            git push -f origin $DEPLOY_BRANCH
+
+      - run:
+          name: Send notification to Power Automate
+          when: always
+          command: |
+            STATUS="SUCCESS"
+            if [ "$CIRCLE_JOB" != "build_and_deploy" ]; then
+              STATUS="FAILED"
+            fi
+
+            SUMMARY_FILE="reports/summary.txt"
+            if [ -f "$SUMMARY_FILE" ]; then
+              SUMMARY_TEXT=$(cat "$SUMMARY_FILE")
+            else
+              SUMMARY_TEXT="No summary file found."
+            fi
+
+            PAYLOAD=$(jq -n \
+              --arg pipelineName "${CIRCLE_PROJECT_REPONAME}" \
+              --arg status "$STATUS" \
+              --arg summary "$SUMMARY_TEXT" \
+              '{pipelineName: $pipelineName, status: $status, summary: $summary}')
+
+            curl -X POST -H "Content-Type: application/json" \
+              -d "$PAYLOAD" "$POWER_AUTOMATE_URL"
 
 workflows:
   version: 2

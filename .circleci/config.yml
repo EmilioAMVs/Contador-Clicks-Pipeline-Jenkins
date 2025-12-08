@@ -64,6 +64,25 @@ jobs:
             docker push ghcr.io/${GITHUB_USER_LC}/contador:$IMAGE_TAG
             docker push ghcr.io/${GITHUB_USER_LC}/contador:latest
 
+      # Actualizar la rama donde ArgoCD mira la imagen
+      - run:
+          name: Update ArgoCD manifest with new image tag
+          command: |
+            git fetch origin
+            git checkout -B argo-deploy origin/argo-deploy || git checkout -B argo-deploy
+
+            echo "Actualizando manifest de ArgoCD con imagen: $IMAGE_TAG"
+
+            # Ajusta la ruta si tu YAML está en otro lugar
+            sed -i "s|\(ghcr.io/${GITHUB_USER_LC}/contador:\).*|\1${IMAGE_TAG}|" k8s/deployment.yaml
+
+            git config user.name "CircleCI Bot"
+            git config user.email "circleci-bot@example.com"
+
+            git add k8s/deployment.yaml
+            git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]" || echo "No changes to commit"
+            git push origin argo-deploy
+
       - run:
           name: Build deploy folder
           command: |

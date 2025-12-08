@@ -10,7 +10,20 @@ jobs:
     executor: docker_executor
 
     steps:
+
+      - run:
+          name: Clean workspace
+          command: |
+            git reset --hard
+            git clean -fdx
+
       - checkout
+
+      - run:
+          name: Fetch latest changes unshallow
+          command: |
+            git fetch --unshallow || true
+            git pull origin main
 
       - setup_remote_docker:
           docker_layer_caching: false

@@ -17,6 +17,6 @@ spec:
       - name: ghcr-secret
       containers:
         - name: default-container
-          image: ghcr.io/emilioamvs/contador:1271196
+          image: ghcr.io/emilioamvs/contador:ab3a2fc
           ports:
             - containerPort: 80

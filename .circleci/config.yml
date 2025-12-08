@@ -76,6 +76,12 @@ jobs:
             docker push ghcr.io/${GITHUB_USER_LC}/contador:$IMAGE_TAG
             docker push ghcr.io/${GITHUB_USER_LC}/contador:latest
 
+      - run:
+          name: Save main content before switching branch
+          command: |
+            mkdir main_copy
+            cp -R index.html style.css report.html script.js logic.js main_copy/
+
       # Actualizar la rama donde ArgoCD mira la imagen
       - run:
           name: Update ArgoCD manifest with new image tag
@@ -98,13 +104,11 @@ jobs:
       - run:
           name: Build deploy folder with updated files
           command: |
-            cp index.html deploy/
-            cp style.css deploy/
-            cp report.html deploy/
-            cp script.js deploy/
-            cp logic.js deploy/
-            cp -r coverage deploy/coverage || true
-            cp -r reports deploy/reports || true
+            cp main_copy/index.html deploy/
+            cp main_copy/style.css deploy/
+            cp main_copy/report.html deploy/
+            cp main_copy/script.js deploy/
+            cp main_copy/logic.js deploy/
 
       - run:
           name: Deploy to GitHub Pages (via HTTPS + Token)

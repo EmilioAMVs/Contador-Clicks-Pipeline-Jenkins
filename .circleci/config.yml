@@ -11,22 +11,17 @@ jobs:
 
     steps:
 
-      - run:
-          name: Clean workspace
-          command: |
-            git reset --hard
-            git clean -fdx
-
       - checkout
 
       - run:
-          name: Fetch latest changes unshallow
+          name: Clean deploy folder
+          command: rm -rf deploy && mkdir deploy
+
+      - run:
+          name: Ensure git repo is fully fetched
           command: |
             git fetch --unshallow || true
             git pull origin main
-
-      - setup_remote_docker:
-          docker_layer_caching: false
 
       # Install dependencies and run tests
       - run:
@@ -95,12 +90,6 @@ jobs:
             git add k8s/deployment.yaml
             git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]" || echo "No changes to commit"
             git push origin argo-deploy
-
-      - run:
-          name: Clean deploy folder
-          command: |
-            rm -rf deploy
-            mkdir -p deploy
 
       - run:
           name: Build deploy folder with updated files

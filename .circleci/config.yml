@@ -17,6 +17,10 @@ jobs:
           name: Clean deploy folder
           command: rm -rf deploy && mkdir deploy
 
+      #Activar docker remoto
+      - setup_remote_docker:
+          docker_layer_caching: false
+
       - run:
           name: Ensure git repo is fully fetched
           command: |

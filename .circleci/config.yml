@@ -76,17 +76,22 @@ jobs:
             # Ajusta la ruta si tu YAML está en otro lugar
             sed -i "s|\(ghcr.io/${GITHUB_USER_LC}/contador:\).*|\1${IMAGE_TAG}|" k8s/deployment.yaml
 
-            git config user.name "CircleCI Bot"
-            git config user.email "circleci-bot@example.com"
+            git config user.name "EmilioAMVs"
+            git config user.email "emiliocabrera321@outlook.com"
 
             git add k8s/deployment.yaml
             git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]" || echo "No changes to commit"
             git push origin argo-deploy
 
       - run:
-          name: Build deploy folder
+          name: Clean deploy folder
           command: |
+            rm -rf deploy
             mkdir -p deploy
+
+      - run:
+          name: Build deploy folder with updated files
+          command: |
             cp index.html deploy/
             cp style.css deploy/
             cp report.html deploy/

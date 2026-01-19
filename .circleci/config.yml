@@ -40,19 +40,16 @@ jobs:
           name: SAST - npm audit
           command: |
             npm audit --json > npm-audit.json || true
-            npx npm-audit-html -i npm-audit.json -o npm-audit-report.html || true
 
+      - store_artifacts:
+          path: npm-audit.json
+          destination: sast/npm-audit.json
 
       # SAST - ESLint Security
       - run:
           name: SAST - ESLint Security Scan
           command: |
             npx eslint . --ext .js -f html -o eslint-security-report.html || true
-
-      # Guardar artefactos SAST
-      - store_artifacts:
-          path: npm-audit-report.html
-          destination: sast/npm-audit-report.html
 
       - store_artifacts:
           path: eslint-security-report.html

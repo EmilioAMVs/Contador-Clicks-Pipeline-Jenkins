@@ -36,6 +36,7 @@ jobs:
             npm ci || npm install
 
       # SAST - npm audit
+      - run:
           name: SAST - npm audit
           command: |
             npm audit --json > npm-audit.json || true

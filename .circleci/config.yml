@@ -100,7 +100,7 @@ jobs:
           name: Save main content before switching branch
           command: |
             mkdir main_copy
-            cp -R index.html style.css report.html script.js logic.js reports main_copy/
+            cp -R index.html style.css report.html script.js logic.js reports coverage main_copy/
 
       # Actualizar la rama donde ArgoCD mira la imagen
       - run:
@@ -130,7 +130,17 @@ jobs:
             cp main_copy/script.js deploy/
             cp main_copy/logic.js deploy/
             cp -R main_copy/reports deploy/ 
+            cp -R main_copy/coverage deploy/
+      
+      - run:
+          name: Copy security reports to deploy
+          command: |
+            mkdir -p deploy/reports
+            cp npm-audit.json deploy/reports/ || true
+            cp eslint-security-report.html deploy/reports/ || true
+            cp zap-report.html deploy/reports/ || true
 
+      
       - run:
           name: Deploy to GitHub Pages (via HTTPS + Token)
           command: |
@@ -145,12 +155,13 @@ jobs:
             git remote add origin https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git
             git push -f origin $DEPLOY_BRANCH
 
-
-      # DAST - OWASP ZAP
+      # DAST - OWASP ZAP (HTML real y escribible)
       - run:
           name: DAST - OWASP ZAP Baseline Scan
           command: |
-            docker run -v /home/circleci/project:/zap/wrk:rw -t ghcr.io/zaproxy/zaproxy:stable \
+            docker run -u root \
+              -v /home/circleci/project:/zap/wrk:rw \
+              -t ghcr.io/zaproxy/zaproxy:stable \
               zap-baseline.py \
               -t https://emilioamvs.github.io/Contador-Clicks-Pipeline-Jenkins/ \
               -r zap-report.html || true

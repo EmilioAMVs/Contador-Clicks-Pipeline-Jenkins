@@ -13,8 +13,6 @@ spec:
       labels:
         app: contador
     spec:
-      imagePullSecrets:
-      - name: ghcr-secret
       containers:
         - name: default-container
           image: ghcr.io/emilioamvs/contador:latest

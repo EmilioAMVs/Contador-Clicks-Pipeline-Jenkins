@@ -76,6 +76,18 @@
     </section>
 
     <section class="card">
+      <h2>🛡️ OWASP ZAP Report</h2>
+      <pre id="zapReport">
+        Este análisis fue generado automáticamente con <b>OWASP ZAP</b> después del despliegue.
+      </pre>
+      <div class="btn-group">
+        <button onclick="window.open('reports/zap-report.html', '_blank')">
+          🛡️ Ver reporte OWASP ZAP
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>🧪 Detalle de Tests</h2>
       <pre id="testReport">Cargando...</pre>
       <div class="btn-group">
@@ -90,6 +102,7 @@
         <button onclick="window.open('coverage/lcov-report/index.html', '_blank')">📈 Ver cobertura completa</button>
       </div>
     </section>
+
   </main>
 
   <script>

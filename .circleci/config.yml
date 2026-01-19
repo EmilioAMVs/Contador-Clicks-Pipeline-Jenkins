@@ -35,6 +35,28 @@ jobs:
             sudo apt-get install -y nodejs npm
             npm ci || npm install
 
+      # SAST - npm audit
+          name: SAST - npm audit
+          command: |
+            npm audit --json > npm-audit.json || true
+            npx npm-audit-html -i npm-audit.json -o npm-audit-report.html || true
+
+
+      # SAST - ESLint Security
+      - run:
+          name: SAST - ESLint Security Scan
+          command: |
+            npx eslint . --ext .js -f html -o eslint-security-report.html || true
+
+      # Guardar artefactos SAST
+      - store_artifacts:
+          path: npm-audit-report.html
+          destination: sast/npm-audit-report.html
+
+      - store_artifacts:
+          path: eslint-security-report.html
+          destination: sast/eslint-security-report.html
+
       - run:
           name: Run tests and ensure coverage/reports exist
           command: |
@@ -124,9 +146,24 @@ jobs:
             git remote add origin https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git
             git push -f origin $DEPLOY_BRANCH
 
+
+      # DAST - OWASP ZAP
+      - run:
+          name: DAST - OWASP ZAP Baseline Scan
+          command: |
+            docker run -v "$PWD:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable \
+              zap-baseline.py \
+              -t https://emilioamvs.github.io/Contador-Clicks-Pipeline-Jenkins/ \
+              -r zap-report.html || true
+
+      # Guardar artefactos DAST
+      - store_artifacts:
+          path: zap-report.html
+          destination: dast/zap-report.html
+
       - run:
           name: Send notification to Power Automate
-          when: always
+          when: always  
           command: |
             STATUS="SUCCESS"
             if [ "$CIRCLE_JOB" != "build_push_deploy" ]; then

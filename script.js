@@ -130,7 +130,7 @@ const client = LDClient.initialize("692cf884023b6e09ac4db4af", context);
 client.on("ready", () => {
   console.log("LaunchDarkly listo!");
 
-  const flagValue = client.variation("reports-button", false);
+  const flagValue = client.variation("reports-button", true);
 
   console.log("Flag reports-button =", flagValue);
 

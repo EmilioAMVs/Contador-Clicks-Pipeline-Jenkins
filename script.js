@@ -137,7 +137,7 @@ client.on("ready", () => {
   const reportsBtn = document.getElementById("reportsBtn");
   const reportsMessage = document.getElementById("reportsMessage");
 
-  if (flagValue) {
+  if (!flagValue) {
     reportsBtn.style.display = "inline-block";
     reportsMessage.textContent = "Reportes habilitados";
   } else {

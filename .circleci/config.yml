@@ -49,7 +49,7 @@ jobs:
       - run:
           name: SAST - ESLint Security Scan
           command: |
-            npx eslint . --ext .js -f html -o eslint-security-report.html || true
+            npx eslint . -f html --output-file eslint-security-report.html || true
 
       - store_artifacts:
           path: eslint-security-report.html
@@ -100,7 +100,7 @@ jobs:
           name: Save main content before switching branch
           command: |
             mkdir main_copy
-            cp -R index.html style.css report.html script.js logic.js main_copy/
+            cp -R index.html style.css report.html script.js logic.js reports main_copy/
 
       # Actualizar la rama donde ArgoCD mira la imagen
       - run:
@@ -129,6 +129,7 @@ jobs:
             cp main_copy/report.html deploy/
             cp main_copy/script.js deploy/
             cp main_copy/logic.js deploy/
+            cp -R main_copy/reports deploy/ 
 
       - run:
           name: Deploy to GitHub Pages (via HTTPS + Token)
@@ -149,7 +150,7 @@ jobs:
       - run:
           name: DAST - OWASP ZAP Baseline Scan
           command: |
-            docker run -v "$PWD:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable \
+            docker run -v /home/circleci/project:/zap/wrk:rw -t ghcr.io/zaproxy/zaproxy:stable \
               zap-baseline.py \
               -t https://emilioamvs.github.io/Contador-Clicks-Pipeline-Jenkins/ \
               -r zap-report.html || true

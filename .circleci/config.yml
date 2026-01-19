@@ -121,22 +121,22 @@ jobs:
             git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]" || echo "No changes to commit"
             git push origin argo-deploy
 
-     # DAST - OWASP ZAP (modo clásico, genera HTML y JSON)
-    - run:
-        name: DAST - OWASP ZAP Baseline Scan
-        command: |
-          mkdir -p zap
+      # DAST - OWASP ZAP (modo clásico, genera HTML y JSON)
+      - run:
+          name: DAST - OWASP ZAP Baseline Scan
+          command: |
+            mkdir -p zap
 
-          docker run --rm -u root \
-            -v /home/circleci/project/zap:/zap/wrk \
-            ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py -cmd \
-            -t https://emilioamvs.github.io/Contador-Clicks-Pipeline-Jenkins/ \
-            -r zap-report.html \
-            -J zap-report.json || true
+            docker run --rm -u root \
+              -v /home/circleci/project/zap:/zap/wrk \
+              ghcr.io/zaproxy/zaproxy:stable \
+              zap-baseline.py -cmd \
+              -t https://emilioamvs.github.io/Contador-Clicks-Pipeline-Jenkins/ \
+              -r zap-report.html \
+              -J zap-report.json || true
 
-          echo "=== Contenido carpeta zap ==="
-          ls -la zap
+            echo "=== Contenido carpeta zap ==="
+            ls -la zap
 
 
       # Guardar artefactos DAST

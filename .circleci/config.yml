@@ -121,6 +121,34 @@ jobs:
             git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]" || echo "No changes to commit"
             git push origin argo-deploy
 
+      # DAST - OWASP ZAP 
+      - run:
+          name: DAST - OWASP ZAP Baseline Scan
+          command: |
+            mkdir -p zap
+
+            docker run --rm -u root \
+              -v /home/circleci/project/zap:/zap/wrk \
+              -w /zap/wrk \
+              ghcr.io/zaproxy/zaproxy:stable \
+              zap-baseline.py \
+              -t https://emilioamvs.github.io/Contador-Clicks-Pipeline-Jenkins/ \
+              -a \
+              -r zap-report.html \
+              -J zap-report.json || true
+
+            echo "=== Contenido carpeta zap ==="
+            ls -la zap
+
+      # Guardar artefactos DAST
+      - store_artifacts:
+          path: zap/zap-report.html
+          destination: dast/zap-report.html
+
+      - store_artifacts:
+          path: zap/zap-report.json
+          destination: dast/zap-report.json=
+
       - run:
           name: Build deploy folder with updated files
           command: |
@@ -138,9 +166,8 @@ jobs:
             mkdir -p deploy/reports
             cp npm-audit.json deploy/reports/ || true
             cp eslint-security-report.html deploy/reports/ || true
-            cp zap-report.html deploy/reports/ || true
+            cp zap/zap-report.html deploy/reports/ || true
 
-      
       - run:
           name: Deploy to GitHub Pages (via HTTPS + Token)
           command: |
@@ -154,29 +181,6 @@ jobs:
 
             git remote add origin https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git
             git push -f origin $DEPLOY_BRANCH
-
-      # DAST - OWASP ZAP 
-      - run:
-          name: DAST - OWASP ZAP Baseline Scan
-          command: |
-            mkdir -p zap
-
-            docker run --rm -u root \
-              -v /home/circleci/project/zap:/zap/wrk \
-              -w /zap/wrk \
-              ghcr.io/zaproxy/zaproxy:stable \
-              zap-baseline.py \
-              -t https://emilioamvs.github.io/Contador-Clicks-Pipeline-Jenkins/ \
-              -r zap-report.html || true
-
-            echo "=== Contenido carpeta zap ==="
-            ls -la zap
-
-
-      # Guardar artefactos DAST
-      - store_artifacts:
-          path: zap/zap-report.html
-          destination: dast/zap-report.html
 
       - run:
           name: Send notification to Power Automate

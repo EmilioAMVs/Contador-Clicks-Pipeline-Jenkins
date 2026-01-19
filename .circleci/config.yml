@@ -155,20 +155,27 @@ jobs:
             git remote add origin https://${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git
             git push -f origin $DEPLOY_BRANCH
 
-      # DAST - OWASP ZAP (HTML real y escribible)
+      # DAST - OWASP ZAP 
       - run:
           name: DAST - OWASP ZAP Baseline Scan
           command: |
-            docker run -u root \
-              -v /home/circleci/project:/zap/wrk:rw \
-              -t ghcr.io/zaproxy/zaproxy:stable \
+            mkdir -p zap
+
+            docker run --rm -u root \
+              -v /home/circleci/project/zap:/zap/wrk \
+              -w /zap/wrk \
+              ghcr.io/zaproxy/zaproxy:stable \
               zap-baseline.py \
               -t https://emilioamvs.github.io/Contador-Clicks-Pipeline-Jenkins/ \
               -r zap-report.html || true
 
+            echo "=== Contenido carpeta zap ==="
+            ls -la zap
+
+
       # Guardar artefactos DAST
       - store_artifacts:
-          path: zap-report.html
+          path: zap/zap-report.html
           destination: dast/zap-report.html
 
       - run:

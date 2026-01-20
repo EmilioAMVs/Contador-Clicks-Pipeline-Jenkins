@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reporte de Pipeline 🚀</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #f4f7fb;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      text-align: center;
+      font-size: 15px;
+    }
+    main {
+      width: min(900px, 95%);
+    }
+    h1 { margin-bottom: 12px; }
+    .card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(20, 30, 50, 0.06);
+      margin: 14px auto;
+      text-align: left;
+    }
+    pre {
+      background: #f0f0f0;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+    button {
+      background-color: #0078d4;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+    button:hover { background-color: #005fa3; }
+    .status {
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .ok { background: #e8f5e9; color: #2e7d32; }
+    .warn { background: #fff8e1; color: #f9a825; }
+    .fail { background: #ffebee; color: #c62828; }
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; justify-content: center; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Reporte de Pipeline 🚀</h1>
+
+    <section class="card" style="justify-content: center; display: flex;">
+      <div id="statusBadge" class="status warn">Cargando estado...</div>
+    </section>
+
+    <section class="card">
+      <h2>🔍 ESLint Report</h2>
+      <pre id="lintReport">Cargando...</pre>
+      <div class="btn-group">
+        <button onclick="window.open('reports/eslint-report.html', '_blank')">🔍 Ver reporte completo ESLint</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🛡️ OWASP ZAP Report</h2>
+      <pre id="zapReport">
+        Este análisis fue generado automáticamente con <b>OWASP ZAP</b> después del despliegue.
+      </pre>
+      <div class="btn-group">
+        <button onclick="window.open('reports/dast/zap-report.html', '_blank')">
+          🛡️ Ver reporte OWASP ZAP
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🧪 Detalle de Tests</h2>
+      <pre id="testReport">Cargando...</pre>
+      <div class="btn-group">
+        <button onclick="window.open('reports/jest-report.html', '_blank')">🧪 Ver reporte completo Jest</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>📈 Resumen de Cobertura</h2>
+      <pre id="coverageReport">Cargando...</pre>
+      <div class="btn-group">
+        <button onclick="window.open('coverage/lcov-report/index.html', '_blank')">📈 Ver cobertura completa</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    async function loadReport() {
+      const badge = document.getElementById('statusBadge');
+      badge.textContent = 'Cargando reporte...';
+      badge.className = 'status warn';
+
+      try {
+        const response = await fetch('reports/summary.txt');
+        const text = await response.text();
+
+        // Extraer resumen de ESLint
+        const lintMatch = text.match(/ESLint Errors: (\d+)[\s\S]*?ESLint Warnings: (\d+)[\s\S]*?Detalles:\n([\s\S]*?)\n\n📌 Jest/);
+        const lintErrors = lintMatch ? lintMatch[1] : 'N/A';
+        const lintWarnings = lintMatch ? lintMatch[2] : 'N/A';
+        const lintDetails = lintMatch ? lintMatch[3].trim() : 'No disponible';
+
+        // Extraer resumen de Jest
+        const jestMatch = text.match(/Tests Passed: (\d+)[\s\S]*?Tests Failed: (\d+)[\s\S]*?Detalles:\n([\s\S]*?)\n\nCobertura:/);
+        const testsPassed = jestMatch ? jestMatch[1] : 'N/A';
+        const testsFailed = jestMatch ? jestMatch[2] : 'N/A';
+        const jestDetails = jestMatch ? jestMatch[3].trim() : 'No disponible';
+
+        // Cobertura
+        const coverageMatch = text.match(/Cobertura: ([\d.]+%)/);
+        const coveragePct = coverageMatch ? coverageMatch[1] : 'N/A';
+
+        // Actualizar HTML
+        document.getElementById('lintReport').innerHTML = `<b>Errores:</b> ${lintErrors}<br><b>Advertencias:</b> ${lintWarnings}<br><br>${lintDetails}`;
+        document.getElementById('testReport').innerHTML = `<b>Tests aprobados:</b> ${testsPassed}<br><b>Tests fallidos:</b> ${testsFailed}<br><br>${jestDetails}`;
+        document.getElementById('coverageReport').innerHTML = `<b>Cobertura total:</b> ${coveragePct}`;
+
+        // Estado general
+        if (lintErrors !== "0" || testsFailed !== "0") {
+          badge.textContent = '⚠️ Fallas detectadas';
+          badge.className = 'status fail';
+        } else {
+          badge.textContent = '✅ Todo pasó correctamente';
+          badge.className = 'status ok';
+        }
+      } catch (err) {
+        badge.textContent = 'Error cargando reporte';
+        badge.className = 'status fail';
+        document.getElementById('lintReport').textContent = 'Error al leer summary.txt';
+        document.getElementById('testReport').textContent = 'Error al leer summary.txt';
+        document.getElementById('coverageReport').textContent = 'Error al leer summary.txt';
+        console.error(err);
+      }
+    }
+
+    // Cargar al iniciar
+    loadReport();
+  </script>
+</body>
+</html>

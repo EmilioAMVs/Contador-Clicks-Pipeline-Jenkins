@@ -1,0 +1,21 @@
+
+=== RESUMEN DEL ANÁLISIS ===
+📌 Lint generado: 1/20/2026, 12:06:16 AM
+ESLint Errors: 1
+ESLint Warnings: 1
+Detalles:
+[⚠️] Línea 9, Col 5: 'asd' is assigned a value but never used. (no-unused-vars)
+[❌] Línea 128, Col 16: 'LDClient' is not defined. (no-undef)
+
+
+📌 Jest generado: 1/20/2026, 12:06:18 AM
+Tests Passed: 4
+Tests Failed: 0
+Detalles:
+[✅ PASÓ] Funciones de manejo de clicks increment() aumenta el valor en 1
+[✅ PASÓ] Funciones de manejo de clicks resetClicks() reinicia el contador a 0
+[✅ PASÓ] Funciones de manejo de clicks addAttempt() agrega un nuevo intento con total de clicks
+[✅ PASÓ] Funciones de manejo de clicks getBestAttempt() devuelve el intento con más clicks
+
+
+Cobertura: 85.71%

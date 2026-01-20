@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: default-container
-          image: ghcr.io/emilioamvs/contador:702fffb
+          image: ghcr.io/emilioamvs/contador:ec4eeee
           ports:
             - containerPort: 80
